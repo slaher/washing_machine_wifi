@@ -16,7 +16,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-
 import java.io.*;
 import java.net.*;
 
@@ -24,22 +23,18 @@ import java.net.*;
 
 public class MainActivity extends AppCompatActivity
 {
-    //    IP nad PORT  ;   DDNS: https://www.duckdns.org   slaherpralka.duckdns.org
+    //    IP  DDNS: https://www.duckdns.org   slaherpralka.duckdns.org
     private String washmachineIpAddress = "192.168.0.129";
-    private int washmashinePortNumber = 5045;
-
+    private IconsManager iconsManager = new IconsManager();
     //    Socket
     private Socket socket = null;
     private SocketAddress socketAddress;
 
     //     washmachine name
-    private String washmashineName = "iwsd51252";
+    //private String washmashineName = "iwsd51252";
 
     //    output commands
-    private String powerOnStr = washmashineName + "_power_on";
-    private String powerOffStr = washmashineName + "_power_off";
-    private String startStr = washmashineName + "_start";
-    private String pauseStr = washmashineName + "_pause";
+
 
     //    buttons initialization
     private Button powerOnBtn;
@@ -47,16 +42,6 @@ public class MainActivity extends AppCompatActivity
     private Button startBtn;
     private Button pauseBtn;
     private ImageView refreshBtn;  // Image as button
-
-    //    input commands
-    static final private String washLedStatusInput = "ledwash";
-    static final private String rinseLedStatusInput = "ledrinse";
-    static final private String runLedStatusInput = "ledrun";
-    static final private String pauseLedStatusInput = "ledpause";
-    static final private String spinLedStatusInput = "ledspin";
-    static final private String drainLedStatusInput = "leddrain";
-    static final private String endOfWashLedStatusInput = "ledendofwash";
-    static final private String lockLedStatusInput = "ledlock";
 
     //    address field
     private TextView txtConn;
@@ -74,9 +59,6 @@ public class MainActivity extends AppCompatActivity
     //    handler - processing message
     private Handler handler = new Handler();
 
-    //    run and pause state values for showing proper icon
-    private Boolean runState = false;
-    private Boolean pauseState = false;
 
     //    Shared preferences - remembers address after closing app
     private SharedPreferences sharedPref;
@@ -118,7 +100,7 @@ public class MainActivity extends AppCompatActivity
         SetEnableDisableButtons(false);
 
         txtConn = (TextView) findViewById(R.id.txt_connection_state);
-        txtConn.setText("Not Connected");
+        txtConn.setText(Constants.notConnectedStr);
 
         //        images initialization
         washImageView = (ImageView) findViewById(R.id.wash_image);
@@ -138,7 +120,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 try {
-                    SendPowerOn();
+                    SendMessage(Constants.powerOnStr);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -150,7 +132,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 try {
-                    SendPowerOff();
+                    SendMessage(Constants.powerOffStr);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -162,7 +144,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 try {
-                    SendPause();
+                    SendMessage(Constants.pauseStr);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -174,7 +156,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 try {
-                    SendStart();
+                    SendMessage(Constants.startStr);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -215,65 +197,65 @@ public class MainActivity extends AppCompatActivity
                             resultBuff = tbuff;
                             String se = new String(resultBuff);
                             parts_input_string = se.split("_");
-                            if ((parts_input_string.length == 3) && parts_input_string[0].equals(washmashineName) ) {
+                            if ((parts_input_string.length == 3) && parts_input_string[0].equals(Constants.washmashineName) ) {
                                 switch (parts_input_string[1]) {
-                                    case washLedStatusInput:
-                                        SetLedIconStatus(parts_input_string,
+                                    case Constants.washLedStatusInput:
+                                        iconsManager.SetLedIconStatus(parts_input_string,
                                                 washImageView,
                                                 R.drawable.wash,
                                                 R.drawable.wash_green,
-                                                washLedStatusInput);
+                                                Constants.washLedStatusInput);
                                         break;
 
-                                    case rinseLedStatusInput:
-                                        SetLedIconStatus(parts_input_string,
+                                    case Constants.rinseLedStatusInput:
+                                        iconsManager.SetLedIconStatus(parts_input_string,
                                                 rinseImageView,
                                                 R.drawable.rinse,
                                                 R.drawable.rinse_green,
-                                                rinseLedStatusInput);
+                                                Constants.rinseLedStatusInput);
                                         break;
 
 
-                                    case spinLedStatusInput:
-                                        SetLedIconStatus(parts_input_string,
+                                    case Constants.spinLedStatusInput:
+                                        iconsManager.SetLedIconStatus(parts_input_string,
                                                 spinImageView,
                                                 R.drawable.spin,
                                                 R.drawable.spin_green,
-                                                spinLedStatusInput);
+                                                Constants.spinLedStatusInput);
                                         break;
 
-                                    case drainLedStatusInput:
-                                        SetLedIconStatus(parts_input_string,
+                                    case Constants.drainLedStatusInput:
+                                        iconsManager.SetLedIconStatus(parts_input_string,
                                                 drainImageView,
                                                 R.drawable.drain,
                                                 R.drawable.drain_green,
-                                                drainLedStatusInput);
+                                                Constants.drainLedStatusInput);
                                         break;
 
-                                    case endOfWashLedStatusInput:
-                                        SetLedIconStatus(parts_input_string,
+                                    case Constants.endOfWashLedStatusInput:
+                                        iconsManager.SetLedIconStatus(parts_input_string,
                                                 endOfWashImageView,
                                                 R.drawable.end,
                                                 R.drawable.end_green,
-                                                endOfWashLedStatusInput);
+                                                Constants.endOfWashLedStatusInput);
                                         break;
 
-                                    case lockLedStatusInput:
-                                        SetLedIconStatus(parts_input_string,
+                                    case Constants.lockLedStatusInput:
+                                        iconsManager.SetLedIconStatus(parts_input_string,
                                                 lockImageView,
                                                 R.drawable.lock,
                                                 R.drawable.lock_green,
-                                                lockLedStatusInput);
+                                                Constants.lockLedStatusInput);
                                         break;
 
-                                    case pauseLedStatusInput:
-                                        pauseState = Boolean.parseBoolean(parts_input_string[2]);
-                                        SetLedIconRunPauseStatus(pauseLedStatusInput);
+                                    case Constants.pauseLedStatusInput:
+                                        iconsManager.pauseState = Boolean.parseBoolean(parts_input_string[2]);
+                                        iconsManager.SetLedIconRunPauseStatus(Constants.pauseLedStatusInput, runImageView);
                                         break;
 
-                                    case runLedStatusInput:
-                                        runState = Boolean.parseBoolean(parts_input_string[2]);
-                                        SetLedIconRunPauseStatus(runLedStatusInput);
+                                    case Constants.runLedStatusInput:
+                                        iconsManager.runState = Boolean.parseBoolean(parts_input_string[2]);
+                                        iconsManager.SetLedIconRunPauseStatus(Constants.runLedStatusInput, runImageView);
                                         break;
 
                                     default:
@@ -300,49 +282,6 @@ public class MainActivity extends AppCompatActivity
         pauseBtn.setEnabled(state);
     }
 
-    private void SetLedIconStatus(final String[] input_string_led,
-                                  final ImageView image_view,
-                                  final int image_name_gray,
-                                  final int image_name_green,
-                                  final String message)
-    {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (!Boolean.parseBoolean(input_string_led[2])) {  // LED OFF
-                    image_view.setImageResource(image_name_gray);
-                    System.out.println(message + " OFF");
-                }
-                else if (Boolean.parseBoolean(input_string_led[2])) {  // LED ON
-                    image_view.setImageResource(image_name_green);
-                    System.out.println(message + " ON");
-                }
-            }
-        });
-    }
-
-    private void SetLedIconRunPauseStatus(final String message)
-    {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (runState) {  // LED GREEN
-                    runImageView.setImageResource(R.drawable.play_green);
-                    System.out.println(message + " GREEN_ON");
-                }
-
-                else if (pauseState) {  // LED ORANGE
-                    runImageView.setImageResource(R.drawable.play_orange);
-                    System.out.println(message + " ORANGE_ON");
-                }
-                else {  // LED OFF
-                    runImageView.setImageResource(R.drawable.play);
-                    System.out.println(message + " OFF");
-                }
-            }
-        });
-    }
-
     private void RefreshConnection() throws IOException {
         if (socket.isConnected()) {
             thr.interrupt();
@@ -352,21 +291,6 @@ public class MainActivity extends AppCompatActivity
         StartConnection();
     }
 
-    private void SendPowerOn() throws IOException {
-        SendMessage(powerOnStr);
-    }
-
-    private void SendStart() throws IOException {
-        SendMessage(startStr);
-    }
-
-    private void SendPowerOff() throws IOException {
-        SendMessage(powerOffStr);
-    }
-
-    private void SendPause() throws IOException {
-        SendMessage(pauseStr);
-    }
     private void SendMessage(String message) throws IOException {
         if (socket.isConnected()) {
             OutputStream output = socket.getOutputStream();
@@ -383,10 +307,10 @@ public class MainActivity extends AppCompatActivity
     {
         socket = null;
         socket = new Socket();
-        txtConn.setText("Not Connected");
+        txtConn.setText(Constants.notConnectedStr);
         SetEnableDisableButtons(false);
         socketAddress = null;
-        socketAddress = new InetSocketAddress(washmachineIpAddress, washmashinePortNumber);
+        socketAddress = new InetSocketAddress(washmachineIpAddress, Constants.washmashinePortNumber);
 
         try {
             socket.connect(socketAddress, 2000);
@@ -401,7 +325,7 @@ public class MainActivity extends AppCompatActivity
         if (socket.isConnected()){
             StartThread();
             thr.start();
-            txtConn.setText("Connected");
+            txtConn.setText(Constants.connectedStr);
             SetEnableDisableButtons(true);
         }
         else
